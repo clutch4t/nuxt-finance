@@ -1,0 +1,7 @@
+{
+  "useTabs": true,
+  "tabWidth": 4,
+  "vueIndentScriptAndStyle": true,
+  "singleAttributePerLine": true,
+  "endOfLine": "auto"
+}
