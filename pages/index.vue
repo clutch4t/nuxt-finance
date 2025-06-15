@@ -15,14 +15,14 @@
 			<FinanceTrend
 				color="green"
 				title="Income"
-				:amount="4000"
+				:amount="incomeTotal"
 				:last-amount="3000"
 				:loading="isLoading"
 			/>
 			<FinanceTrend
 				color="red"
 				title="Expense"
-				:amount="4000"
+				:amount="expenseTotal"
 				:last-amount="5000"
 				:loading="isLoading"
 			/>
@@ -40,6 +40,28 @@
 				:last-amount="3000"
 				:loading="isLoading"
 			/>
+		</section>
+		<section class="flex justify-between items-center my-10">
+			<div>
+				<h2 class="text-2xl font-extrabold">Transactions</h2>
+				<div class="text-gray-500 dark:text-gray-400">
+					You have {{ incomeCount }} incoming transactions and
+					{{ expenseCount }} expenses during this period.
+				</div>
+			</div>
+			<div>
+				<UButton
+					icon="i-heroicons-plus-circle"
+					color="green"
+					variant="solid"
+					label="Add"
+					@click="isAddModalOpen = true"
+				/>
+				<TransactionModal
+					v-model="isAddModalOpen"
+					@saved="refreshTransactions()"
+				/>
+			</div>
 		</section>
 		<section v-if="!isLoading">
 			<div
@@ -71,12 +93,30 @@
 
 <script setup>
 	import { transactionViewOptions } from "~/constants";
+	const supabase = useSupabaseClient();
 
 	const selectedView = ref(transactionViewOptions[1]);
 	const transactions = ref([]);
 	const isLoading = ref(false);
+	const isAddModalOpen = ref(false);
 
-	const supabase = useSupabaseClient();
+	const income = computed(() =>
+		transactions.value.filter((t) => t.type === "Income")
+	);
+
+	const expense = computed(() =>
+		transactions.value.filter((t) => t.type === "Expense")
+	);
+
+	const incomeCount = computed(() => income.value.length);
+	const expenseCount = computed(() => expense.value.length);
+
+	const incomeTotal = computed(() =>
+		income.value.reduce((acc, current) => acc + current.amount, 0)
+	);
+	const expenseTotal = computed(() =>
+		expense.value.reduce((acc, current) => acc + current.amount, 0)
+	);
 
 	const fetchTransactions = async () => {
 		isLoading.value = true;
@@ -85,7 +125,8 @@
 			const { data } = await useAsyncData("transactions", async () => {
 				const { data, error } = await supabase
 					.from("transactions")
-					.select();
+					.select()
+					.order("created_at", { ascending: false });
 
 				if (error) return [];
 
