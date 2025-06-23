@@ -110,6 +110,8 @@
 		},
 	} = useFetchTransactions(current);
 
+	await refresh();
+
 	const {
 		refresh: refreshPrevious,
 		transactions: {
@@ -118,5 +120,5 @@
 		},
 	} = useFetchTransactions(previous);
 
-	await Promise.all([refresh(), refreshPrevious()]);
+	await refreshPrevious();
 </script>

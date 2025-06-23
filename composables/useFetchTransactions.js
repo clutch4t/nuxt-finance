@@ -3,6 +3,10 @@ export const useFetchTransactions = (period) => {
 	const transactions = ref([]);
 	const pending = ref(false);
 
+	watch(period, async () => {
+		await refresh();
+	});
+
 	const income = computed(() =>
 		transactions.value.filter((t) => t.type === "Income")
 	);
@@ -50,14 +54,6 @@ export const useFetchTransactions = (period) => {
 	const refresh = async () => {
 		transactions.value = await fetchTransactions();
 	};
-
-	watch(
-		period,
-		async () => {
-			await refresh();
-		},
-		{ immediate: true }
-	);
 
 	const transactionsGroupedByDate = computed(() => {
 		const grouped = {};

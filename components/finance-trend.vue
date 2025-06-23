@@ -44,6 +44,8 @@
 		loading: Boolean,
 	});
 
+	const { amount } = toRefs(props);
+
 	const trendingUp = computed(() => props.amount >= props.lastAmount);
 
 	const trendIcon = computed(() =>
@@ -65,7 +67,7 @@
 		return `${Math.ceil(ratio)}%`;
 	});
 
-	const { currency } = useCurrency(props.amount);
+	const { currency } = useCurrency(amount);
 </script>
 
 <style scoped>
