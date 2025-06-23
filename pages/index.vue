@@ -16,29 +16,29 @@
 				color="green"
 				title="Income"
 				:amount="incomeTotal"
-				:last-amount="3000"
-				:loading="isLoading"
+				:last-amount="previousIncomeTotal"
+				:loading="pending"
 			/>
 			<FinanceTrend
 				color="red"
 				title="Expense"
 				:amount="expenseTotal"
-				:last-amount="5000"
-				:loading="isLoading"
+				:last-amount="previousExpenseTotal"
+				:loading="pending"
 			/>
 			<FinanceTrend
 				color="red"
 				title="Investments"
 				:amount="4000"
 				:last-amount="4100"
-				:loading="isLoading"
+				:loading="pending"
 			/>
 			<FinanceTrend
 				color="green"
 				title="Savings"
 				:amount="4000"
 				:last-amount="3000"
-				:loading="isLoading"
+				:loading="pending"
 			/>
 		</section>
 		<section class="flex justify-between items-center my-10">
@@ -59,13 +59,13 @@
 				/>
 				<TransactionModal
 					v-model="isAddModalOpen"
-					@saved="refreshTransactions()"
+					@saved="refresh()"
 				/>
 			</div>
 		</section>
-		<section v-if="!isLoading">
+		<section v-if="!pending">
 			<div
-				v-for="(transactionsDaily, date) in transactionsGroupedByDate"
+				v-for="(transactionsDaily, date) in byDate"
 				:key="date"
 				class="mb-10"
 			>
@@ -77,7 +77,7 @@
 					v-for="transaction in transactionsDaily"
 					:key="transaction.id"
 					:transaction="transaction"
-					@deleted="refreshTransactions()"
+					@deleted="refresh()"
 				/>
 			</div>
 		</section>
@@ -96,49 +96,27 @@
 
 	const selectedView = ref(transactionViewOptions[1]);
 	const isAddModalOpen = ref(false);
+	const { current, previous } = useSelectedTimePeriod(selectedView);
 
-	const fetchTransactions = async () => {
-		isLoading.value = true;
+	const {
+		pending,
+		refresh,
+		transactions: {
+			incomeCount,
+			expenseCount,
+			incomeTotal,
+			expenseTotal,
+			grouped: { byDate },
+		},
+	} = useFetchTransactions(current);
 
-		try {
-			const { data } = await useAsyncData("transactions", async () => {
-				const { data, error } = await supabase
-					.from("transactions")
-					.select()
-					.order("created_at", { ascending: false });
+	const {
+		refresh: refreshPrevious,
+		transactions: {
+			incomeTotal: previousIncomeTotal,
+			expenseTotal: previousExpenseTotal,
+		},
+	} = useFetchTransactions(previous);
 
-				if (error) return [];
-
-				return data;
-			});
-
-			return data.value;
-		} finally {
-			isLoading.value = false;
-		}
-	};
-
-	const refreshTransactions = async () => {
-		transactions.value = await fetchTransactions();
-	};
-
-	await refreshTransactions();
-
-	const transactionsGroupedByDate = computed(() => {
-		const grouped = {};
-
-		for (const transaction of transactions.value) {
-			const date = new Date(transaction.created_at)
-				.toISOString()
-				.split("T")[0];
-
-			if (!grouped[date]) {
-				grouped[date] = [];
-			}
-
-			grouped[date].push(transaction);
-		}
-
-		return grouped;
-	});
+	await Promise.all([refresh(), refreshPrevious()]);
 </script>
