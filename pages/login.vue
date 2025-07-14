@@ -40,7 +40,7 @@
 </template>
 
 <script setup>
-	const toast = useToast();
+	const { toastError } = useAppToast();
 	const supabase = useSupabaseClient();
 
 	const success = ref(false);
@@ -58,17 +58,18 @@
 			});
 
 			if (error) {
-				toast.add({
+				toastError({
 					title: "Error while being authenticated",
-					icon: "i-heroicons-exclamation-circle",
 					description: error.message,
-					color: "red",
 				});
 			} else {
 				success.value = true;
 			}
 		} catch (error) {
-		} finally {
+			toastError({
+				title: "Error logging in",
+				description: error.message,
+			});
 		}
 	};
 </script>

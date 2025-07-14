@@ -86,7 +86,7 @@
 	import { z } from "zod";
 
 	const supabase = useSupabaseClient();
-	const toast = useToast();
+	const { toastSuccess, toastError } = useAppToast();
 
 	const props = defineProps({
 		modelValue: Boolean,
@@ -157,9 +157,8 @@
 				.upsert({ ...state.value });
 
 			if (!error) {
-				toast.add({
+				toastSuccess({
 					title: "Transaction saved",
-					icon: "i-heroicons-check-circle",
 				});
 				isAddModalOpen.value = false;
 				emit("saved");
@@ -168,7 +167,7 @@
 
 			throw error;
 		} catch (error) {
-			toast.add({
+			toastError({
 				title: `Error saving transaction`,
 				description: `${error.message}`,
 				icon: "i-heroicons-exclamation-circle",

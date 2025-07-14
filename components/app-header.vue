@@ -3,8 +3,9 @@
 		<NuxtLink
 			class="text-xl font-bold"
 			to="/"
-			>Nuxt Finance Tracker</NuxtLink
 		>
+			Nuxt Finance Tracker
+		</NuxtLink>
 		<UDropdown
 			v-if="user"
 			:items="items"
@@ -42,6 +43,7 @@
 <script setup></script>
 
 <script setup>
+	const supabase = useSupabaseClient();
 	const user = useSupabaseUser();
 	const items = [
 		[
@@ -55,13 +57,13 @@
 			{
 				label: "Settings",
 				icon: "i-heroicons-cog-8-tooth",
-				onClick: () => console.log("Link to settings in the future"),
+				click: () => console.log("Link to settings in the future"),
 			},
 			{
 				label: "Sign out",
 				icon: "i-heroicons-arrow-left-on-rectangle",
-				onClick: () => {
-					supabase.auth.signOut();
+				click: async () => {
+					await supabase.auth.signOut();
 					return navigateTo("/login");
 				},
 			},

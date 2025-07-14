@@ -34,7 +34,7 @@
 </template>
 
 <script setup>
-	const toast = useToast();
+	const { toastSuccess, toastError } = useAppToast();
 	const supabase = useSupabaseClient();
 	const emit = defineEmits(["deleted"]);
 
@@ -65,18 +65,14 @@
 				.delete()
 				.eq("id", props.transaction.id);
 
-			toast.add({
+			toastSuccess({
 				title: "Transaction deleted",
-				icon: "i-heroicons-check-circle",
-				color: "green",
 			});
 
 			emit("deleted", props.transaction.id);
 		} catch (error) {
-			toast.add({
+			toastError({
 				title: `${error}`,
-				icon: "i-heroicons-exclamation-circle",
-				color: "red",
 			});
 		} finally {
 			isLoading.value = false;
