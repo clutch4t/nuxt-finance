@@ -19,11 +19,11 @@
 				alt="Avatar"
 			/>
 
-			<template #account="{ item }">
+			<template #account>
 				<div class="text-left">
 					<p>Signed in as</p>
 					<p class="font-medium text-gray-900 dark:text-white">
-						{{ item.label }}
+						{{ user.email }}
 					</p>
 				</div>
 			</template>
@@ -48,7 +48,6 @@
 	const items = [
 		[
 			{
-				label: user.value?.email,
 				slot: "account",
 				disabled: true,
 			},
@@ -57,7 +56,7 @@
 			{
 				label: "Settings",
 				icon: "i-heroicons-cog-8-tooth",
-				click: () => console.log("Link to settings in the future"),
+				click: () => navigateTo("/settings/profile"),
 			},
 			{
 				label: "Sign out",
