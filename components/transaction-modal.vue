@@ -1,7 +1,9 @@
 <template>
 	<UModal v-model="isAddModalOpen">
 		<UCard>
-			<template #header>Add transaction</template>
+			<template #header
+				>{{ isEditing ? "Edit" : "Add" }} transaction</template
+			>
 			<UForm
 				ref="form"
 				:state="state"
@@ -16,6 +18,7 @@
 				>
 					<USelect
 						v-model="state.type"
+						:disabled="isEditing"
 						placeholder="Select the transaction type"
 						:options="types"
 					/>
@@ -90,8 +93,15 @@
 
 	const props = defineProps({
 		modelValue: Boolean,
+		transaction: {
+			type: Object,
+			required: false,
+		},
 	});
+
 	const emit = defineEmits(["update:modelValue", "saved"]);
+
+	const isEditing = computed(() => !!props.transaction);
 
 	const defaultSchema = z.object({
 		created_at: z.string(),
@@ -129,13 +139,21 @@
 	const form = ref(null);
 	const isLoading = ref(false);
 
-	const initialState = {
-		type: undefined,
-		amount: 0,
-		created_at: undefined,
-		description: undefined,
-		category: undefined,
-	};
+	const initialState = isEditing.value
+		? {
+				type: props.transaction.type,
+				amount: props.transaction.amount,
+				created_at: props.transaction.created_at.split("T")[0],
+				description: props.transaction.description,
+				category: props.transaction.category,
+		  }
+		: {
+				type: undefined,
+				amount: 0,
+				created_at: undefined,
+				description: undefined,
+				category: undefined,
+		  };
 	const state = ref({ ...initialState });
 
 	const isAddModalOpen = computed({
@@ -154,7 +172,7 @@
 		try {
 			const { error } = await supabase
 				.from("transactions")
-				.upsert({ ...state.value });
+				.upsert({ ...state.value, id: props.transaction?.id });
 
 			if (!error) {
 				toastSuccess({
